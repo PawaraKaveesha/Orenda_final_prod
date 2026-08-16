@@ -13,7 +13,8 @@
     "start": "node server.js",
     "db:migrate": "node migrate.js",
     "db:setup": "node seed/setup.js",
-    "db:reset": "node seed/setup.js --reset"
+    "db:reset": "node seed/setup.js --reset",
+    "build": "vite build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
