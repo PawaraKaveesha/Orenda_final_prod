@@ -1,0 +1,44 @@
+# Render blueprint for the Orenda Villa Resort backend.
+#
+# The repository root contains BOTH the React frontend (Vite) and the API
+# server under `server/`. This blueprint deploys ONLY the API service.
+# Deploy the frontend separately to Cloudflare Pages (see RENDER_DEPLOYMENT.md).
+#
+# Secrets (DATABASE_URL, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD,
+# FRONTEND_URL) are intentionally NOT stored here — set them once in the
+# Render dashboard. `sync: false` marks them as "set manually".
+
+services:
+  - type: web
+    name: orenda-api
+    runtime: node
+    rootDir: server
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
+    # Runs once, before the new version goes live, on every deploy.
+    # Idempotent + non-destructive: creates schema if missing, seeds only
+    # empty tables and creates the initial admin from ADMIN_EMAIL/ADMIN_PASSWORD.
+    # If your Render plan does not run preDeploy commands, run `npm run db:setup`
+    # once via the Render Shell (or locally) instead.
+    preDeployCommand: npm run db:setup
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
