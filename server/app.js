@@ -52,8 +52,13 @@ app.use((req, _res, next) => {
 
 // ---- Static uploads + seeded images ----
 app.use('/images', express.static(path.join(__dirname, 'public/images'))
-const frontendPath = path.join(__dirname, '../dist')
-app.use(express.static(frontendPath))
+app.get('/debug', (_req, res) => {
+  res.json({
+    frontendPath,
+    cwd: process.cwd(),
+    dirname: __dirname,
+  })
+})
 
 // ---- Health ----
 // Confirms the server is up and (without exposing any internals) whether the
