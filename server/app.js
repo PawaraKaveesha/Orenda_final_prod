@@ -51,7 +51,9 @@ app.use((req, _res, next) => {
 })
 
 // ---- Static uploads + seeded images ----
-app.use('/images', express.static(path.join(__dirname, 'public/images')))
+app.use('/images', express.static(path.join(__dirname, 'public/images'))
+const frontendPath = path.join(__dirname, '../dist')
+app.use(express.static(frontendPath))
 
 // ---- Health ----
 // Confirms the server is up and (without exposing any internals) whether the
@@ -78,6 +80,17 @@ app.use('/api', apiLimiter)
 
 // ---- API routes ----
 app.use('/api', routes)
+
+// ---- 404 + centralized errors ----
+// ---- Serve frontend SPA ----
+// API routes that don't exist should still go through the API 404 handler.
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next()
+  }
+
+  res.sendFile(path.join(frontendPath, 'index.html'))
+})
 
 // ---- 404 + centralized errors ----
 app.use(notFound)
