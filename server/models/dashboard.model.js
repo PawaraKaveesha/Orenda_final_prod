@@ -1,17 +1,18 @@
-import pool from '../config/database.js'
+import mongoose from 'mongoose'
 
 export async function getStats() {
+  const db = mongoose.connection.db
   const [villas, inquiries, newInquiries, activeOffers] = await Promise.all([
-    pool.query('SELECT COUNT(*)::int AS count FROM villas'),
-    pool.query('SELECT COUNT(*)::int AS count FROM inquiries'),
-    pool.query("SELECT COUNT(*)::int AS count FROM inquiries WHERE status = 'New'"),
-    pool.query("SELECT COUNT(*)::int AS count FROM offers WHERE is_active = TRUE"),
+    db.collection('villas').countDocuments(),
+    db.collection('inquiries').countDocuments(),
+    db.collection('inquiries').countDocuments({ status: 'New' }),
+    db.collection('offers').countDocuments({ is_active: true }),
   ])
 
   return {
-    totalVillas: villas.rows[0].count,
-    totalInquiries: inquiries.rows[0].count,
-    newInquiries: newInquiries.rows[0].count,
-    activeOffers: activeOffers.rows[0].count,
+    totalVillas: villas,
+    totalInquiries: inquiries,
+    newInquiries,
+    activeOffers,
   }
 }

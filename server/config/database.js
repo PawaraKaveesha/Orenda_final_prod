@@ -1,58 +1,40 @@
 import 'dotenv/config'
-import pg from 'pg'
-
-const { Pool } = pg
+import mongoose from 'mongoose'
 
 // ---------------------------------------------------------------------------
-// Shared PostgreSQL connection config.
+// Shared MongoDB (Mongoose) connection.
 //
-// Prefers DATABASE_URL (used by Render, Neon, Supabase, ...). Falls back to the
-// individual DB_* variables for local development.
-//
-// SSL: hosted providers such as Neon and Render Postgres require TLS. Enable it
-// explicitly with DB_SSL=true, or by including `sslmode=require` in the URL.
-// Verification is on by default; set DB_SSL_INSECURE=true only if your provider
-// uses a certificate that cannot be verified (avoid in production).
+// The connection string comes from MONGODB_URI (set in server/.env locally, or
+// provided by Render environment variables in production). No credentials are
+// ever hardcoded here.
 // ---------------------------------------------------------------------------
-export function buildPoolConfig({ forDatabase } = {}) {
-  const connectionString = process.env.DATABASE_URL
 
-  if (connectionString) {
-    return { connectionString, max: 10, ssl: sslConfig(connectionString) }
+export function getMongoUri() {
+  const uri = process.env.MONGODB_URI
+  if (!uri) {
+    throw new Error('MONGODB_URI is required. Set it in server/.env or the environment.')
   }
-
-  return {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 5432),
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '',
-    database: forDatabase || process.env.DB_NAME || 'orenda_galle',
-    max: 10,
-    ssl: sslConfig(undefined),
-  }
+  return uri
 }
 
-function sslConfig(connectionString) {
-  const sslmode = /(^|[?&])sslmode=([a-z-]+)/i.exec(connectionString || '')
-  const mode = sslmode ? sslmode[2].toLowerCase() : ''
-
-  if (process.env.DB_SSL === 'true' || mode === 'require' || mode === 'verify-ca' || mode === 'verify-full') {
-    // rejectUnauthorized stays true unless the operator explicitly opts out.
-    return { rejectUnauthorized: process.env.DB_SSL_INSECURE !== 'true' }
-  }
-  return undefined
+export async function connectDatabase() {
+  const uri = getMongoUri()
+  mongoose.set('strictQuery', true)
+  await mongoose.connect(uri)
+  return mongoose.connection
 }
 
-// Connection pool shared by the whole application.
-export const pool = new Pool(buildPoolConfig())
-
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle database client', err)
-})
+export async function disconnectDatabase() {
+  await mongoose.disconnect()
+}
 
 export async function verifyConnection() {
-  const { rows } = await pool.query('SELECT 1 AS connected, NOW() AS server_time')
-  return rows[0]
+  const conn = mongoose.connection
+  if (conn.readyState !== 1) {
+    throw new Error('MongoDB is not connected')
+  }
+  await conn.db.admin().ping()
+  return { connected: true }
 }
 
-export default pool
+export default mongoose

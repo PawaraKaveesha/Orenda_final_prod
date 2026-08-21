@@ -1,22 +1,34 @@
-import pool from '../config/database.js'
+import mongoose from 'mongoose'
+import { nextId } from './counter.model.js'
+import { toJSONOptions, toNumericId } from './utils.js'
+
+const testimonialSchema = new mongoose.Schema(
+  {
+    testimonial_id: { type: Number, unique: true, index: true },
+    customer_name: { type: String, required: true, maxlength: 120 },
+    country: { type: String, required: true, maxlength: 80 },
+    review: { type: String, required: true },
+    rating: { type: Number, default: 5, min: 1, max: 5 },
+    created_at: { type: Date, default: Date.now },
+  },
+  { toJSON: toJSONOptions() },
+)
+
+const Testimonial =
+  mongoose.models.Testimonial || mongoose.model('Testimonial', testimonialSchema)
 
 export async function findAll() {
-  const { rows } = await pool.query(
-    `SELECT testimonial_id, customer_name, country, review, rating, created_at
-       FROM testimonials
-      ORDER BY testimonial_id`,
-  )
-  return rows
+  return Testimonial.find().sort({ testimonial_id: 1 })
 }
 
 export async function create(data) {
-  const { rows } = await pool.query(
-    `INSERT INTO testimonials (customer_name, country, review, rating)
-     VALUES ($1, $2, $3, $4)
-     RETURNING testimonial_id, customer_name, country, review, rating, created_at`,
-    [data.customer_name, data.country, data.review, data.rating || 5],
-  )
-  return rows[0]
+  return Testimonial.create({
+    testimonial_id: await nextId('testimonials'),
+    customer_name: data.customer_name,
+    country: data.country,
+    review: data.review,
+    rating: data.rating ?? 5,
+  })
 }
 
 const UPDATABLE = new Set(['customer_name', 'country', 'review', 'rating'])
@@ -24,23 +36,19 @@ const UPDATABLE = new Set(['customer_name', 'country', 'review', 'rating'])
 export async function update(id, data) {
   const fields = Object.keys(data).filter((key) => UPDATABLE.has(key))
   if (fields.length === 0) return null
+  const testimonialId = toNumericId(id)
+  if (testimonialId === null) return null
 
-  const sets = fields.map((key, i) => `${key} = $${i + 2}`)
-  const values = fields.map((key) => data[key])
-  const { rows } = await pool.query(
-    `UPDATE testimonials
-        SET ${sets.join(', ')}
-      WHERE testimonial_id = $1
-      RETURNING testimonial_id, customer_name, country, review, rating, created_at`,
-    [id, ...values],
-  )
-  return rows[0] || null
+  const set = {}
+  for (const key of fields) set[key] = data[key]
+  return Testimonial.findOneAndUpdate({ testimonial_id: testimonialId }, { $set: set }, { new: true })
 }
 
 export async function remove(id) {
-  const { rows } = await pool.query(
-    'DELETE FROM testimonials WHERE testimonial_id = $1 RETURNING testimonial_id',
-    [id],
-  )
-  return rows[0] || null
+  const testimonialId = toNumericId(id)
+  if (testimonialId === null) return null
+  const deleted = await Testimonial.findOneAndDelete({ testimonial_id: testimonialId })
+  return deleted ? { testimonial_id: deleted.testimonial_id } : null
 }
+
+export default Testimonial

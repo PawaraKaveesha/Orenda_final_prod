@@ -9,10 +9,12 @@ import { notFound } from './middleware/notFound.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { apiLimiter } from './middleware/rateLimiter.js'
 import { sanitizeBody } from './utils/sanitize.js'
-import { pool } from './config/database.js'
+import mongoose from './config/database.js'
 import logger from './utils/logger.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+// Built frontend (Vite output) served by the API in production.
+const frontendPath = path.join(__dirname, '..', 'dist')
 
 const app = express()
 
@@ -51,7 +53,7 @@ app.use((req, _res, next) => {
 })
 
 // ---- Static uploads + seeded images ----
-app.use('/images', express.static(path.join(__dirname, 'public/images'))
+app.use('/images', express.static(path.join(__dirname, 'public/images')))
 app.get('/debug', (_req, res) => {
   res.json({
     frontendPath,
@@ -66,7 +68,7 @@ app.get('/debug', (_req, res) => {
 app.get('/api/health', async (_req, res) => {
   let db = 'unavailable'
   try {
-    await pool.query('SELECT 1')
+    await mongoose.connection.db.admin().ping()
     db = 'connected'
   } catch {
     // keep "unavailable" — never leak credentials or stack traces here

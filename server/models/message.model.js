@@ -1,35 +1,45 @@
-import pool from '../config/database.js'
+import mongoose from 'mongoose'
+import { nextId } from './counter.model.js'
+import { toJSONOptions, toNumericId } from './utils.js'
+
+const messageSchema = new mongoose.Schema(
+  {
+    message_id: { type: Number, unique: true, index: true },
+    sender_name: { type: String, required: true },
+    email: { type: String, required: true },
+    subject: { type: String, required: true },
+    body: { type: String, required: true },
+    is_read: { type: Boolean, default: false },
+    received_at: { type: Date, default: Date.now },
+  },
+  { toJSON: toJSONOptions() },
+)
+
+const Message = mongoose.models.Message || mongoose.model('Message', messageSchema)
 
 export async function findAll() {
-  const { rows } = await pool.query(
-    `SELECT message_id, sender_name, email, subject, body, is_read, received_at
-       FROM messages
-      ORDER BY received_at DESC, message_id DESC`,
-  )
-  return rows
+  return Message.find().sort({ received_at: -1, message_id: -1 })
 }
 
 export async function create(data) {
-  const { rows } = await pool.query(
-    `INSERT INTO messages (sender_name, email, subject, body)
-     VALUES ($1, $2, $3, $4)
-     RETURNING message_id, sender_name, email, subject, body, is_read, received_at`,
-    [data.sender_name, data.email, data.subject, data.body],
-  )
-  return rows[0]
+  return Message.create({
+    message_id: await nextId('messages'),
+    sender_name: data.sender_name,
+    email: data.email,
+    subject: data.subject,
+    body: data.body,
+  })
 }
 
 export async function markRead(id, read = true) {
-  const { rows } = await pool.query(
-    'UPDATE messages SET is_read = $2 WHERE message_id = $1 RETURNING message_id',
-    [id, read],
+  const messageId = toNumericId(id)
+  if (messageId === null) return null
+  const updated = await Message.findOneAndUpdate(
+    { message_id: messageId },
+    { $set: { is_read: read } },
+    { new: true },
   )
-  if (!rows[0]) return null
-  const { rows: updated } = await pool.query(
-    `SELECT message_id, sender_name, email, subject, body, is_read, received_at
-       FROM messages
-      WHERE message_id = $1`,
-    [id],
-  )
-  return updated[0]
+  return updated || null
 }
+
+export default Message

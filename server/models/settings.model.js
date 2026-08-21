@@ -1,4 +1,5 @@
-import pool from '../config/database.js'
+import mongoose from 'mongoose'
+import { toJSONOptions } from './utils.js'
 
 const PUBLIC_KEYS = new Set([
   'resort_name',
@@ -21,12 +22,21 @@ const PUBLIC_KEYS = new Set([
   'social_tiktok',
 ])
 
+const settingsSchema = new mongoose.Schema(
+  {
+    setting_key: { type: String, required: true, unique: true, maxlength: 80 },
+    setting_value: { type: String, default: '' },
+    is_public: { type: Boolean, default: false },
+    updated_at: { type: Date, default: Date.now },
+  },
+  { toJSON: toJSONOptions() },
+)
+
+const Setting = mongoose.models.Setting || mongoose.model('Setting', settingsSchema)
+
 export async function findAll({ publicOnly = false } = {}) {
-  const where = publicOnly ? 'WHERE is_public = TRUE' : ''
-  const { rows } = await pool.query(
-    `SELECT setting_key, setting_value, is_public FROM settings ${where} ORDER BY setting_key`,
-  )
-  return rows
+  const filter = publicOnly ? { is_public: true } : {}
+  return Setting.find(filter).sort({ setting_key: 1 })
 }
 
 export async function findPublicMap() {
@@ -38,25 +48,21 @@ export async function findPublicMap() {
 }
 
 export async function upsertMany(entries) {
-  const client = await pool.connect()
-  try {
-    await client.query('BEGIN')
-    for (const { key, value, isPublic } of entries) {
-      await client.query(
-        `INSERT INTO settings (setting_key, setting_value, is_public, updated_at)
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-         ON CONFLICT (setting_key)
-         DO UPDATE SET setting_value = EXCLUDED.setting_value,
-                       is_public = EXCLUDED.is_public,
-                       updated_at = CURRENT_TIMESTAMP`,
-        [key, value ?? '', isPublic ?? PUBLIC_KEYS.has(key)],
-      )
-    }
-    await client.query('COMMIT')
-  } catch (err) {
-    await client.query('ROLLBACK')
-    throw err
-  } finally {
-    client.release()
-  }
+  const operations = entries.map(({ key, value, isPublic }) => ({
+    updateOne: {
+      filter: { setting_key: key },
+      update: {
+        $set: {
+          setting_value: value ?? '',
+          is_public: isPublic ?? PUBLIC_KEYS.has(key),
+          updated_at: new Date(),
+        },
+      },
+      upsert: true,
+    },
+  }))
+  if (operations.length === 0) return
+  await Setting.bulkWrite(operations)
 }
+
+export default Setting

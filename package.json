@@ -11,7 +11,6 @@
     "server": "npm --prefix server run dev",
     "server:start": "npm --prefix server start",
     "db:setup": "npm --prefix server run db:setup",
-    "db:migrate": "npm --prefix server run db:migrate",
     "db:reset": "npm --prefix server run db:reset"
   },
   "dependencies": {
@@ -33,6 +32,6 @@
     "oxlint": "^1.75.0",
     "postcss": "^8.5.25",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1"
+    "vite": "^8.2.2"
   }
 }

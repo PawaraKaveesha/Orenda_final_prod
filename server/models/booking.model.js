@@ -1,41 +1,68 @@
-import pool from '../config/database.js'
+import mongoose from 'mongoose'
+import { nextId } from './counter.model.js'
+import { toJSONOptions, toNumericId } from './utils.js'
 
-const BOOKING_SELECT = `
-  SELECT b.booking_id, b.guest_name, b.email, b.phone, b.villa_id, v.villa_name,
-         b.check_in, b.check_out, b.guests, b.total_price, b.status, b.created_at
-    FROM bookings b
-    LEFT JOIN villas v ON v.villa_id = b.villa_id
-`
+const bookingSchema = new mongoose.Schema(
+  {
+    booking_id: { type: Number, unique: true, index: true },
+    guest_name: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String, default: null },
+    villa_id: { type: Number, required: true, index: true },
+    check_in: { type: String, required: true },
+    check_out: { type: String, required: true },
+    guests: { type: Number, required: true, min: 1 },
+    total_price: { type: Number, default: null, min: 0 },
+    status: { type: String, enum: ['Pending', 'Confirmed', 'Cancelled'], default: 'Pending' },
+    created_at: { type: Date, default: Date.now },
+  },
+  { toJSON: toJSONOptions() },
+)
+
+const Booking = mongoose.models.Booking || mongoose.model('Booking', bookingSchema)
+
+// Equivalent of the old LEFT JOIN villas for villa_name.
+function withVillaName(pipeline) {
+  return [
+    ...pipeline,
+    {
+      $lookup: {
+        from: 'villas',
+        localField: 'villa_id',
+        foreignField: 'villa_id',
+        as: 'villa',
+      },
+    },
+    { $addFields: { villa_name: { $arrayElemAt: ['$villa.villa_name', 0] } } },
+    { $unset: ['villa', '_id'] },
+  ]
+}
 
 export async function findAll() {
-  const { rows } = await pool.query(`${BOOKING_SELECT} ORDER BY b.created_at DESC, b.booking_id DESC`)
-  return rows
+  return Booking.aggregate(withVillaName([{ $sort: { created_at: -1, booking_id: -1 } }]))
 }
 
 export async function findById(id) {
-  const { rows } = await pool.query(`${BOOKING_SELECT} WHERE b.booking_id = $1`, [id])
+  const bookingId = toNumericId(id)
+  if (bookingId === null) return null
+  const rows = await Booking.aggregate(withVillaName([{ $match: { booking_id: bookingId } }]))
   return rows[0] || null
 }
 
 export async function create(data) {
-  const { rows } = await pool.query(
-    `INSERT INTO bookings
-       (guest_name, email, phone, villa_id, check_in, check_out, guests, total_price, status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING booking_id`,
-    [
-      data.guest_name,
-      data.email,
-      data.phone || null,
-      data.villa_id,
-      data.check_in,
-      data.check_out,
-      data.guests,
-      data.total_price,
-      data.status || 'Pending',
-    ],
-  )
-  return findById(rows[0].booking_id)
+  const createdDoc = await Booking.create({
+    booking_id: await nextId('bookings'),
+    guest_name: data.guest_name,
+    email: data.email,
+    phone: data.phone ?? null,
+    villa_id: data.villa_id,
+    check_in: data.check_in,
+    check_out: data.check_out,
+    guests: data.guests,
+    total_price: data.total_price ?? null,
+    status: data.status ?? 'Pending',
+  })
+  return findById(createdDoc.booking_id)
 }
 
 const ALLOWED_STATUSES = new Set(['Pending', 'Confirmed', 'Cancelled'])
@@ -46,9 +73,13 @@ export async function updateStatus(id, status) {
     err.status = 400
     throw err
   }
-  const { rows } = await pool.query(
-    'UPDATE bookings SET status = $2 WHERE booking_id = $1 RETURNING booking_id',
-    [id, status],
+  const bookingId = toNumericId(id)
+  if (bookingId === null) return null
+  const updated = await Booking.findOneAndUpdate(
+    { booking_id: bookingId },
+    { $set: { status } },
   )
-  return rows[0] ? findById(id) : null
+  return updated ? findById(id) : null
 }
+
+export default Booking
