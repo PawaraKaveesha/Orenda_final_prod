@@ -7,7 +7,9 @@ import { ok } from '../utils/response.js'
 const SALT_ROUNDS = 10
 
 function publicAdmin(admin) {
-  const { password_hash: _hash, ...safe } = admin
+  if (!admin) return null
+  const obj = typeof admin.toObject === 'function' ? admin.toObject() : admin
+  const { password_hash: _hash, _id, __v, ...safe } = obj
   return safe
 }
 
@@ -25,15 +27,38 @@ export const login = asyncHandler(async (req, res) => {
     throw err
   }
 
-  const admin = await adminModel.findByEmail(String(email).toLowerCase().trim())
-  if (!admin || admin.status !== 'active') {
-    const err = new Error('Invalid email or password')
-    err.status = 401
-    throw err
+  const inputEmail = String(email).toLowerCase().trim()
+  const inputPassword = String(password)
+
+  const envEmail = process.env.ADMIN_EMAIL ? String(process.env.ADMIN_EMAIL).toLowerCase().trim() : null
+  const envPassword = process.env.ADMIN_PASSWORD ? String(process.env.ADMIN_PASSWORD) : null
+
+  let admin = null
+
+  // 1. Authenticate against server-side environment variables ADMIN_EMAIL and ADMIN_PASSWORD
+  if (envEmail && envPassword && inputEmail === envEmail && inputPassword === envPassword) {
+    admin = await adminModel.findByEmail(envEmail)
+    if (!admin) {
+      const hash = await bcrypt.hash(inputPassword, SALT_ROUNDS)
+      admin = await adminModel.create({
+        full_name: 'Orenda Administrator',
+        email: envEmail,
+        password_hash: hash,
+        role: 'superadmin',
+      })
+    }
+  } else {
+    // 2. Fallback: Authenticate against MongoDB hashed credentials if not matching env vars
+    const dbAdmin = await adminModel.findByEmail(inputEmail)
+    if (dbAdmin && dbAdmin.status === 'active') {
+      const valid = await bcrypt.compare(inputPassword, dbAdmin.password_hash)
+      if (valid) {
+        admin = dbAdmin
+      }
+    }
   }
 
-  const valid = await bcrypt.compare(String(password), admin.password_hash)
-  if (!valid) {
+  if (!admin || admin.status === 'disabled') {
     const err = new Error('Invalid email or password')
     err.status = 401
     throw err

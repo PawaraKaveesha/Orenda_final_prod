@@ -127,7 +127,7 @@ path — **no local binary, no create/drop**.
 4. Future changes: `npm run db:migrate`.
 
 > First-login password change is enforced (`must_change_password=true`), so the
-> seeded admin password is only ever stored hashed and is invalidated on first
+> seeded  password is only ever stored hashed and is invalidated on first
 > sign-in.
 
 ---
@@ -145,7 +145,7 @@ SELECT count(*) FROM gallery;        -- 12
 SELECT count(*) FROM testimonials;   -- 6
 SELECT count(*) FROM settings;       -- 18
 
--- Admin rows (never share hashes)
+--  rows (never share hashes)
 SELECT email, role, status, must_change_password FROM admins;
 
 -- Idempotency proof: run db:setup twice, counts stay identical
