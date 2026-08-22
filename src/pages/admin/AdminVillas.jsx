@@ -3,10 +3,12 @@ import { toast } from 'react-hot-toast'
 import { Pencil, Power, BedDouble, Users, Ruler, ChevronDown } from 'lucide-react'
 import StatusBadge from '../../components/admin/StatusBadge'
 import Modal from '../../components/admin/Modal'
+import ImageUploader from '../../components/admin/ImageUploader'
 import Loading from '../../components/ui/Loading'
 import ErrorMessage from '../../components/ui/ErrorMessage'
 import { useApi } from '../../hooks/useApi'
 import { listAllVillas, updateVilla } from '../../api/villas'
+import { uploadSingleImage } from '../../api/upload'
 import { formatLKR } from '../../utils/currency'
 
 const inputClass =
@@ -310,13 +312,23 @@ export default function AdminVillas() {
                 htmlFor="villa-image"
                 className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-moss-800/60"
               >
-                Main image URL
+                Main image (Drag & Drop or Enter URL)
               </label>
+              <ImageUploader
+                multiple={false}
+                categories={[]}
+                onUpload={async (file) => {
+                  const res = await uploadSingleImage(file)
+                  setDraft((prev) => ({ ...prev, image: res.url }))
+                }}
+                className="mb-3"
+              />
               <input
                 id="villa-image"
                 type="text"
                 value={draft.image}
                 onChange={(e) => setDraft({ ...draft, image: e.target.value })}
+                placeholder="Image URL (populated automatically upon upload)"
                 className={inputClass}
               />
             </div>

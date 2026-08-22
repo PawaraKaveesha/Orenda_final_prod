@@ -26,6 +26,21 @@ export async function create(data) {
   })
 }
 
+export async function findById(id) {
+  const galleryId = toNumericId(id)
+  if (galleryId === null) return null
+  return Gallery.findOne({ gallery_id: galleryId })
+}
+
+export async function update(id, data) {
+  const galleryId = toNumericId(id)
+  if (galleryId === null) return null
+  const set = {}
+  if (data.image_url !== undefined) set.image_url = data.image_url
+  if (data.category !== undefined) set.category = data.category
+  return Gallery.findOneAndUpdate({ gallery_id: galleryId }, { $set: set }, { new: true })
+}
+
 export async function remove(id) {
   const galleryId = toNumericId(id)
   if (galleryId === null) return null
