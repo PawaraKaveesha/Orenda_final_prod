@@ -11,6 +11,7 @@ import { apiLimiter } from './middleware/rateLimiter.js'
 import { sanitizeBody } from './utils/sanitize.js'
 import mongoose from './config/database.js'
 import logger from './utils/logger.js'
+import 'dotenv/config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // Built frontend (Vite output) served by the API in production.
