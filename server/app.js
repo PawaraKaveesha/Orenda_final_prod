@@ -55,6 +55,10 @@ app.use((req, _res, next) => {
 
 // ---- Static uploads + seeded images ----
 app.use('/images', express.static(path.join(__dirname, 'public/images')))
+
+// ---- Serve built frontend static assets (Vite output in dist) ----
+app.use(express.static(frontendPath))
+
 app.get('/debug', (_req, res) => {
   res.json({
     frontendPath,
