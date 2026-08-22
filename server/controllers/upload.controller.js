@@ -1,6 +1,6 @@
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { created } from '../utils/response.js'
-import { uploadImageBuffer } from '../utils/storage.js'
+import { optimizeAndStoreInGridFS } from '../utils/gridfs.js'
 
 export const handleSingleUpload = asyncHandler(async (req, res) => {
   const file = req.file || (req.files && req.files[0])
@@ -9,8 +9,8 @@ export const handleSingleUpload = asyncHandler(async (req, res) => {
     err.status = 400
     throw err
   }
-  const result = await uploadImageBuffer(file.buffer, file.originalname, file.mimetype)
-  created(res, { url: result.url, public_id: result.public_id })
+  const result = await optimizeAndStoreInGridFS(file.buffer, file.originalname, file.mimetype)
+  created(res, result)
 })
 
 export const handleBatchUpload = asyncHandler(async (req, res) => {
@@ -22,7 +22,7 @@ export const handleBatchUpload = asyncHandler(async (req, res) => {
   }
   const results = []
   for (const file of files) {
-    const uploaded = await uploadImageBuffer(file.buffer, file.originalname, file.mimetype)
+    const uploaded = await optimizeAndStoreInGridFS(file.buffer, file.originalname, file.mimetype)
     results.push(uploaded)
   }
   created(res, results)

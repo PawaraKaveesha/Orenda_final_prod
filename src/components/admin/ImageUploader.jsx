@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react'
-import { UploadCloud, X, Check, FileImage, Loader2 } from 'lucide-react'
+import { UploadCloud, X, Check, Loader2, Sparkles, Database } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE_MB = 5
 const MAX_BYTES = MAX_SIZE_MB * 1024 * 1024
 
-function formatFileSize(bytes) {
-  if (!bytes) return '0 B'
+export function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -17,13 +17,14 @@ function formatFileSize(bytes) {
 export default function ImageUploader({
   multiple = true,
   categories = ['Beach', 'Villa', 'Interior', 'Nature', 'Wellness'],
-  onUpload, // async function(files, category)
+  onUpload, // async function(files, category) -> returns optimization info or results
   className = '',
 }) {
   const [dragActive, setDragActive] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState([]) // Array of { file, previewUrl, id }
   const [category, setCategory] = useState(categories[0] || 'Resort')
   const [uploading, setUploading] = useState(false)
+  const [lastOptimization, setLastOptimization] = useState(null)
   const fileInputRef = useRef(null)
 
   const handleFiles = (filesList) => {
@@ -90,12 +91,28 @@ export default function ImageUploader({
     setUploading(true)
     try {
       const filesToSubmit = selectedFiles.map((item) => item.file)
-      await onUpload(multiple ? filesToSubmit : filesToSubmit[0], category)
+      const res = await onUpload(multiple ? filesToSubmit : filesToSubmit[0], category)
+
+      // Calculate optimization metrics if returned
+      let optInfo = null
+      if (res && (res.optimization || (Array.isArray(res) && res[0]?.optimization))) {
+        const item = res.optimization || res[0].optimization
+        optInfo = {
+          originalName: item.originalName,
+          originalSize: item.originalSize,
+          optimizedSize: item.optimizedSize,
+          savedPercent: item.savedPercent,
+          isDuplicate: item.isDuplicate,
+        }
+      }
+
       clearAll()
+      setLastOptimization(optInfo)
+
       toast.success(
         filesToSubmit.length > 1
-          ? `${filesToSubmit.length} images uploaded successfully!`
-          : 'Image uploaded successfully!'
+          ? `${filesToSubmit.length} images WebP-optimized and saved to MongoDB GridFS!`
+          : 'Image WebP-optimized and saved to MongoDB GridFS!'
       )
     } catch (err) {
       toast.error(err.message || 'Upload failed. Please check file format or size.')
@@ -139,7 +156,7 @@ export default function ImageUploader({
           or <span className="font-semibold text-brass-600 underline underline-offset-2">Click to browse files</span>
         </p>
         <p className="mt-2 text-xs text-moss-800/50">
-          Supported formats: JPG, PNG, WEBP, GIF (Max {MAX_SIZE_MB}MB per file)
+          Auto-optimized to 1920x1920 WebP in MongoDB GridFS (Max {MAX_SIZE_MB}MB per file)
         </p>
       </div>
 
@@ -186,7 +203,7 @@ export default function ImageUploader({
                     {item.file.name}
                   </p>
                   <p className="text-[11px] text-moss-800/60">
-                    {formatFileSize(item.file.size)}
+                    Original: {formatFileSize(item.file.size)}
                   </p>
                 </div>
                 <button
@@ -221,14 +238,39 @@ export default function ImageUploader({
             >
               {uploading ? (
                 <>
-                  <Loader2 size={15} className="animate-spin" /> Uploading…
+                  <Loader2 size={15} className="animate-spin" /> Optimizing WebP & Saving…
                 </>
               ) : (
                 <>
-                  <Check size={15} /> Upload {selectedFiles.length} {selectedFiles.length === 1 ? 'Image' : 'Images'}
+                  <Check size={15} /> Upload & Optimize {selectedFiles.length} {selectedFiles.length === 1 ? 'Image' : 'Images'}
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Optimization Statistics Badge */}
+      {lastOptimization && (
+        <div className="flex items-center justify-between rounded-2xl bg-moss-900/95 p-4 text-sand-50 ring-1 ring-moss-700 shadow-md">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brass-500/20 text-brass-400">
+              <Sparkles size={20} />
+            </span>
+            <div>
+              <p className="text-xs font-semibold text-brass-400 uppercase tracking-widest flex items-center gap-1.5">
+                <Database size={13} /> MongoDB GridFS WebP Optimization
+              </p>
+              <p className="mt-0.5 text-xs text-sand-200">
+                Original: <span className="font-semibold">{formatFileSize(lastOptimization.originalSize)}</span> &rarr; Optimized: <span className="font-semibold text-brass-400">{formatFileSize(lastOptimization.optimizedSize)}</span>
+                {lastOptimization.isDuplicate && ' (Duplicate Detected)'}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="rounded-full bg-brass-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brass-400">
+              Saved {lastOptimization.savedPercent}%
+            </span>
           </div>
         </div>
       )}

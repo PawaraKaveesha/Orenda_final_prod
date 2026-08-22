@@ -5,7 +5,7 @@ import { toJSONOptions, toNumericId } from './utils.js'
 const gallerySchema = new mongoose.Schema(
   {
     gallery_id: { type: Number, unique: true, index: true },
-    image_url: { type: String, required: true, unique: true, maxlength: 500 },
+    image_url: { type: String, required: true, maxlength: 500 },
     category: { type: String, default: 'Resort', maxlength: 60 },
     uploaded_at: { type: Date, default: Date.now },
   },

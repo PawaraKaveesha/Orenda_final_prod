@@ -2,7 +2,7 @@ import * as galleryModel from '../models/gallery.model.js'
 import { asyncHandler, notFoundError } from '../utils/asyncHandler.js'
 import { requireFields } from '../utils/validate.js'
 import { ok, created, noContent } from '../utils/response.js'
-import { uploadImageBuffer, deleteImageFromStorage } from '../utils/storage.js'
+import { optimizeAndStoreInGridFS, deleteFromGridFS } from '../utils/gridfs.js'
 
 export const listGallery = asyncHandler(async (_req, res) => {
   ok(res, await galleryModel.findAll())
@@ -25,12 +25,25 @@ export const uploadGalleryItems = asyncHandler(async (req, res) => {
   const createdItems = []
 
   for (const file of files) {
-    const uploaded = await uploadImageBuffer(file.buffer, file.originalname, file.mimetype)
+    const optimized = await optimizeAndStoreInGridFS(file.buffer, file.originalname, file.mimetype)
     const item = await galleryModel.create({
-      image_url: uploaded.url,
+      image_url: optimized.url,
       category,
     })
-    createdItems.push(item)
+
+    const itemObj = item.toObject ? item.toObject() : item
+    createdItems.push({
+      ...itemObj,
+      optimization: {
+        originalName: optimized.originalName,
+        originalSize: optimized.originalSize,
+        optimizedSize: optimized.optimizedSize,
+        savedPercent: optimized.savedPercent,
+        width: optimized.width,
+        height: optimized.height,
+        isDuplicate: optimized.isDuplicate,
+      },
+    })
   }
 
   created(res, createdItems.length === 1 ? createdItems[0] : createdItems)
@@ -51,26 +64,38 @@ export const replaceGalleryItem = asyncHandler(async (req, res) => {
   const file = files[0]
   const category = req.body.category || existing.category || 'Resort'
 
-  // Upload replacement image
-  const uploaded = await uploadImageBuffer(file.buffer, file.originalname, file.mimetype)
+  // Optimize & store replacement image in GridFS
+  const optimized = await optimizeAndStoreInGridFS(file.buffer, file.originalname, file.mimetype)
 
-  // Remove old image from storage
+  // Remove old binary from GridFS
   if (existing.image_url) {
-    await deleteImageFromStorage(existing.image_url)
+    await deleteFromGridFS(existing.image_url)
   }
 
   const updated = await galleryModel.update(id, {
-    image_url: uploaded.url,
+    image_url: optimized.url,
     category,
   })
 
-  ok(res, updated)
+  const updatedObj = updated.toObject ? updated.toObject() : updated
+  ok(res, {
+    ...updatedObj,
+    optimization: {
+      originalName: optimized.originalName,
+      originalSize: optimized.originalSize,
+      optimizedSize: optimized.optimizedSize,
+      savedPercent: optimized.savedPercent,
+      width: optimized.width,
+      height: optimized.height,
+      isDuplicate: optimized.isDuplicate,
+    },
+  })
 })
 
 export const deleteGalleryItem = asyncHandler(async (req, res) => {
   const existing = await galleryModel.findById(req.params.id)
   if (existing && existing.image_url) {
-    await deleteImageFromStorage(existing.image_url)
+    await deleteFromGridFS(existing.image_url)
   }
   const deleted = await galleryModel.remove(req.params.id)
   if (!deleted) throw notFoundError('Gallery item not found')
