@@ -39,11 +39,19 @@ import img37 from '../assets/images/img-37.jpeg'
 import img38 from '../assets/images/img-38.jpeg'
 import img39 from '../assets/images/img-39.jpeg'
 import img40 from '../assets/images/img-40.jpeg'
-import review01 from '../assets/images/Reviews/WhatsApp Image 2026-08-12 at 1.45.42 AM.jpeg'
-import review02 from '../assets/images/Reviews/WhatsApp Image 2026-08-12 at 1.45.43 AM (1).jpeg'
-import review03 from '../assets/images/Reviews/WhatsApp Image 2026-08-12 at 1.45.43 AM.jpeg'
-import review04 from '../assets/images/Reviews/WhatsApp Image 2026-08-12 at 1.45.52 AM (1).jpeg'
-import review05 from '../assets/images/Reviews/WhatsApp Image 2026-08-12 at 1.45.52 AM.jpeg'
+
+const reviewModules = import.meta.glob('../assets/images/Reviews/*.{png,jpg,jpeg,PNG,JPG,JPEG,webp,svg,gif,WEBP}', {
+  eager: true,
+  import: 'default',
+})
+
+const reviewImages = Array.from(
+  new Set(
+    Object.keys(reviewModules)
+      .sort()
+      .map((key) => reviewModules[key])
+  )
+)
 
 import flyerEscape from '../assets/images/flyers/review-08.jpeg'
 import flyerCoupleDay from '../assets/images/flyers/WhatsApp Image 2026-08-12 at 1.43.56 AM.jpeg'
@@ -147,6 +155,6 @@ export const images = {
     contact: img22,
   },
   cta: img23,
-  reviews: [review01, review02, review03, review04, review05],
+  reviews: reviewImages,
 }
 
