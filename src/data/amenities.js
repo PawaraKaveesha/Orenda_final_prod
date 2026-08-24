@@ -14,7 +14,7 @@ import {
 export const amenities = [
   {
     icon: Waves,
-    title: 'Infinity Pool',
+    title: 'Pool',
     description: 'A saltwater pool that melts into the palm canopy.',
   },
   {
@@ -26,11 +26,6 @@ export const amenities = [
     icon: Sparkles,
     title: 'Open-Air Spa',
     description: 'Ayurvedic rituals and massage beneath the trees.',
-  },
-  {
-    icon: Bike,
-    title: 'Eco Bicycles',
-    description: 'Complimentary bikes for wandering the coast.',
   },
   {
     icon: UtensilsCrossed,
