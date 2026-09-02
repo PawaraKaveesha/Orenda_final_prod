@@ -12,7 +12,7 @@ export default function RoomCard({ room, onInquire }) {
     .sort()
     .map((key) => roomImageModules[key])
     
-  const allImages = [room.image, ...additionalImages]
+  const allImages = additionalImages.length > 0 ? additionalImages : (room.image ? [room.image] : [])
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-moss-900/5 ring-1 ring-sand-200 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-moss-900/15">
