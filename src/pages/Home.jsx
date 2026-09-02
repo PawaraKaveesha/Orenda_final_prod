@@ -276,7 +276,7 @@ function Testimonials({ data }) {
         <Reveal>
           <SectionHeading
             eyebrow="Testimonials"
-            title="Words from our guests"
+            title=" from our guests"
           />
         </Reveal>
         {error ? (

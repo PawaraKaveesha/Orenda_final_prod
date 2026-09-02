@@ -362,7 +362,7 @@ function Testimonials({ data }) {
     <section className="bg-moss-50 py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
-          <SectionHeading eyebrow="Testimonials" title="Words from our guests" />
+          <SectionHeading eyebrow="Testimonials" title="Words for our guests" />
         </Reveal>
         {error ? (
           <div className="mt-14">

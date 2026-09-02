@@ -28,16 +28,6 @@ export const amenities = [
     description: 'Ayurvedic rituals and massage beneath the trees.',
   },
   {
-    icon: UtensilsCrossed,
-    title: 'Private Chef',
-    description: 'Candle-lit dinners cooked in your villa or on the sand.',
-  },
-  {
-    icon: Trees,
-    title: 'Native Gardens',
-    description: 'Two acres of endemic flora and fruit trees.',
-  },
-  {
     icon: ShieldCheck,
     title: 'Wellness & Safety',
     description: 'Dedicated concierge and round-the-clock care.',
