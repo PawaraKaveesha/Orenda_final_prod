@@ -29,6 +29,15 @@ import { listActiveOffers } from '../api/offers'
 import { getPublicSettings } from '../api/settings'
 import { createInquiry } from '../api/inquiries'
 
+const roomImages = import.meta.glob(
+  '../assets/images/Rooms/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}',
+  {
+    eager: true,
+    import: 'default'
+  }
+);
+const roomImagesList = Object.values(roomImages);
+
 export default function About() {
   const rooms = useApi(listVillas)
   const testimonials = useApi(listTestimonials)
@@ -221,7 +230,17 @@ function NatureVillage() {
 }
 
 function Rooms({ data, onInquire }) {
-  const { data: items, loading, error, refetch } = data
+  const { data: apiItems, loading, error, refetch } = data
+  
+  const items = apiItems?.map((room, i) => {
+    const normalizedName = room.name.split(' ')[0].toLowerCase();
+    const matchingImages = roomImagesList.filter(img => img.toLowerCase().includes(normalizedName));
+    return {
+      ...room,
+      image: matchingImages[0] || roomImagesList[i % roomImagesList.length] || room.image
+    };
+  });
+
   return (
     <section id="rooms" className="bg-moss-50 py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
