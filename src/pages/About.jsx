@@ -29,14 +29,13 @@ import { listActiveOffers } from '../api/offers'
 import { getPublicSettings } from '../api/settings'
 import { createInquiry } from '../api/inquiries'
 
-const roomImages = import.meta.glob(
-  '../assets/images/Rooms/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}',
-  {
-    eager: true,
-    import: 'default'
-  }
-);
-const roomImagesList = Object.values(roomImages);
+import araliya1 from '../assets/images/Rooms/araliya-1.jpeg'
+import araliya2 from '../assets/images/Rooms/araliya-2.jpeg'
+import ehela1 from '../assets/images/Rooms/ehela-1.jpeg'
+import ehela2 from '../assets/images/Rooms/ehela-2.jpeg'
+import karada1 from '../assets/images/Rooms/karada-1.jpeg'
+
+const roomImagesList = [araliya1, araliya2, ehela1, ehela2, karada1];
 
 export default function About() {
   const rooms = useApi(listVillas)
