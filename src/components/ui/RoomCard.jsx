@@ -1,18 +1,9 @@
 import { BedDouble, Users, Ruler, Check, MessageCircle } from 'lucide-react'
 
-const roomImageModules = import.meta.glob('../../assets/images/Rooms/*.{png,jpg,jpeg,PNG,JPG,JPEG,webp,svg,gif,WEBP}', {
-  eager: true,
-  import: 'default',
-})
-
 export default function RoomCard({ room, onInquire }) {
-  const normalizedName = room.name.split(' ')[0].toLowerCase()
-  const additionalImages = Object.keys(roomImageModules)
-    .filter((key) => key.toLowerCase().includes(normalizedName))
-    .sort()
-    .map((key) => roomImageModules[key])
-    
-  const allImages = [room.image, ...additionalImages]
+  const allImages = room.images && room.images.length > 0 
+    ? room.images 
+    : [room.image].filter(Boolean);
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-moss-900/5 ring-1 ring-sand-200 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-moss-900/15">

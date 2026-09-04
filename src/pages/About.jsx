@@ -35,6 +35,11 @@ import ehela1 from '../assets/images/Rooms/ehela-1.jpeg'
 import ehela2 from '../assets/images/Rooms/ehela-2.jpeg'
 import karada1 from '../assets/images/Rooms/karada-1.jpeg'
 
+const roomImagesMap = {
+  araliya: [araliya1, araliya2],
+  ehela: [ehela1, ehela2],
+  karada: [karada1]
+};
 const roomImagesList = [araliya1, araliya2, ehela1, ehela2, karada1];
 
 export default function About() {
@@ -233,10 +238,12 @@ function Rooms({ data, onInquire }) {
   
   const items = apiItems?.map((room, i) => {
     const normalizedName = room.name.split(' ')[0].toLowerCase();
-    const matchingImages = roomImagesList.filter(img => img.toLowerCase().includes(normalizedName));
+    const matchingImages = roomImagesMap[normalizedName] || [];
+    const fallbackImage = roomImagesList[i % roomImagesList.length] || room.image;
     return {
       ...room,
-      image: matchingImages[0] || roomImagesList[i % roomImagesList.length] || room.image
+      image: matchingImages.length > 0 ? matchingImages[0] : fallbackImage,
+      images: matchingImages.length > 0 ? matchingImages : [fallbackImage]
     };
   });
 
