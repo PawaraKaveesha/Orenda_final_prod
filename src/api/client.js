@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const TOKEN_KEY = 'orenda_admin_token'
 
-const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
+const API_BASE = (import.meta?.env?.VITE_API_URL || '').replace(/\/+$/, '')
 
 export const api = axios.create({
   baseURL: API_BASE || '/api',

@@ -1,4 +1,4 @@
-import api, { resolveImageUrl } from './client'
+import api, { resolveImageUrl } from './client.js'
 
 export function mapRoomPhoto(p) {
   return {
