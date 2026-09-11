@@ -15,6 +15,7 @@ import AdminVillas from './pages/admin/AdminVillas'
 import AdminGallery from './pages/admin/AdminGallery'
 import AdminOffers from './pages/admin/AdminOffers'
 import AdminSettings from './pages/admin/AdminSettings'
+import AdminRoomPhotos from './pages/admin/AdminRoomPhotos'
 
 function ScrollManager() {
   const location = useLocation()
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="gallery" element={<AdminGallery />} />
           <Route path="offers" element={<AdminOffers />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="room-photos" element={<AdminRoomPhotos />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

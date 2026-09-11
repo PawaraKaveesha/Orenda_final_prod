@@ -10,6 +10,7 @@ import testimonialRoutes from './testimonial.routes.js'
 import settingsRoutes from './settings.routes.js'
 import uploadRoutes from './upload.routes.js'
 import imageRoutes from './image.routes.js'
+import roomPhotoRoutes from './room_photo.routes.js'
 
 const router = Router()
 
@@ -24,5 +25,6 @@ router.use('/testimonials', testimonialRoutes)
 router.use('/settings', settingsRoutes)
 router.use('/upload', uploadRoutes)
 router.use('/images', imageRoutes)
+router.use('/room-photos', roomPhotoRoutes)
 
 export default router

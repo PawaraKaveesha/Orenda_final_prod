@@ -29,21 +29,11 @@ import { listActiveOffers } from '../api/offers'
 import { getPublicSettings } from '../api/settings'
 import { createInquiry } from '../api/inquiries'
 
-import araliya1 from '../assets/images/Rooms/araliya-1.jpeg'
-import araliya2 from '../assets/images/Rooms/araliya-2.jpeg'
-import ehela1 from '../assets/images/Rooms/ehela-1.jpeg'
-import ehela2 from '../assets/images/Rooms/ehela-2.jpeg'
-import karada1 from '../assets/images/Rooms/karada-1.jpeg'
-
-const roomImagesMap = {
-  araliya: [araliya1, araliya2],
-  ehela: [ehela1, ehela2],
-  karada: [karada1]
-};
-const roomImagesList = [araliya1, araliya2, ehela1, ehela2, karada1];
+import { listRoomPhotos } from '../api/roomPhotos'
 
 export default function About() {
   const rooms = useApi(listVillas)
+  const roomPhotos = useApi(listRoomPhotos)
   const testimonials = useApi(listTestimonials)
   const gallery = useApi(listGallery)
   const offers = useApi(listActiveOffers)
@@ -63,7 +53,7 @@ export default function About() {
       <Hero name={resortName} tagline={settings.data?.resort_tagline || 'Luxury Eco Resort'} />
       <AboutIntro />
       <NatureVillage />
-      <Rooms data={rooms} onInquire={handleInquire} />
+      <Rooms data={rooms} roomPhotos={roomPhotos} onInquire={handleInquire} />
       <Amenities />
       <Gallery data={gallery} />
       <Offers data={offers} />
@@ -233,19 +223,32 @@ function NatureVillage() {
   )
 }
 
-function Rooms({ data, onInquire }) {
+function Rooms({ data, roomPhotos, onInquire }) {
   const { data: apiItems, loading, error, refetch } = data
-  
+  const photos = roomPhotos?.data ?? []
+  const numRooms = apiItems?.length || 1
+
+  // Distribute the uploaded room photos across the villa cards.
+  // Each card gets its distributed slice of photos; if there are no admin photos
+  // the card falls back to its own villa image_url (already resolved by mapVilla).
   const items = apiItems?.map((room, i) => {
-    const normalizedName = room.name.split(' ')[0].toLowerCase();
-    const matchingImages = roomImagesMap[normalizedName] || [];
-    const fallbackImage = roomImagesList[i % roomImagesList.length] || room.image;
+    if (photos.length === 0) {
+      // No admin-uploaded photos: show only the villa's own image
+      return {
+        ...room,
+        images: room.image ? [room.image] : [],
+      }
+    }
+    // Distribute uploaded photos across room cards
+    const roomCardPhotos = photos.filter((_, idx) => idx % numRooms === i)
+    const assignedPhotos = roomCardPhotos.length > 0 ? roomCardPhotos : [photos[i % photos.length]]
+    const imageSrcs = assignedPhotos.map((p) => p.src)
     return {
       ...room,
-      image: matchingImages.length > 0 ? matchingImages[0] : fallbackImage,
-      images: matchingImages.length > 0 ? matchingImages : [fallbackImage]
-    };
-  });
+      image: imageSrcs[0],
+      images: imageSrcs,
+    }
+  })
 
   return (
     <section id="rooms" className="bg-moss-50 py-24 sm:py-32">
@@ -278,6 +281,7 @@ function Rooms({ data, onInquire }) {
     </section>
   )
 }
+
 
 function Amenities() {
   return (

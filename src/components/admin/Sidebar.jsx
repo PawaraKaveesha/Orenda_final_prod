@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   X,
+  BedDouble,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import logo from '../../assets/logo.png'
@@ -16,6 +17,7 @@ const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/inquiries', label: 'Customer Inquiries', icon: Inbox },
   { to: '/admin/villas', label: 'Villas', icon: Home },
+  { to: '/admin/room-photos', label: 'Room Photos', icon: BedDouble },
   { to: '/admin/gallery', label: 'Gallery', icon: ImageIcon },
   { to: '/admin/offers', label: 'Offers', icon: BadgePercent },
   { to: '/admin/settings', label: 'Settings', icon: Settings },

@@ -1,26 +1,36 @@
-import { BedDouble, Users, Ruler, Check, MessageCircle } from 'lucide-react'
+import { BedDouble, Users, Ruler, Check, MessageCircle, ImageIcon } from 'lucide-react'
 
 export default function RoomCard({ room, onInquire }) {
-  const allImages = room.images && room.images.length > 0 
-    ? room.images 
-    : [room.image].filter(Boolean);
+  const allImages = room.images && room.images.length > 0
+    ? room.images
+    : [room.image].filter(Boolean)
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-moss-900/5 ring-1 ring-sand-200 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-moss-900/15">
       <div className="relative aspect-[4/3] w-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {allImages.map((img, idx) => (
-          <div key={idx} className="relative h-full w-full shrink-0 snap-center overflow-hidden">
-            <img
-              src={img}
-              alt={`${room.name} — ${room.tagline}`}
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+        {allImages.length > 0 ? (
+          allImages.map((img, idx) => (
+            <div key={idx} className="relative h-full w-full shrink-0 snap-center overflow-hidden">
+              <img
+                src={img}
+                alt={`${room.name} — ${room.tagline}`}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            </div>
+          ))
+        ) : (
+          // Empty state — no photos uploaded yet
+          <div className="flex h-full w-full shrink-0 items-center justify-center bg-moss-100">
+            <div className="text-center">
+              <ImageIcon size={40} className="mx-auto text-moss-400" />
+              <p className="mt-2 text-xs text-moss-500">Photo coming soon</p>
+            </div>
           </div>
-        ))}
-        
+        )}
+
         <span className="absolute left-4 top-4 rounded-full bg-sand-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-moss-800 backdrop-blur pointer-events-none z-10">
           {room.tagline}
         </span>
@@ -36,6 +46,7 @@ export default function RoomCard({ room, onInquire }) {
           </div>
         </div>
       </div>
+
 
       <div className="flex flex-1 flex-col p-6">
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-moss-800/70">
