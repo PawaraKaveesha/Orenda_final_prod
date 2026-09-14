@@ -42,25 +42,19 @@ Keep the connection string private — you will paste it into Render, not into g
 
 ### 3. Root directory
 
-```
-server
-```
-
-This tells Render to build/run only the API (the React app lives at the root).
+Leave empty / blank (repository root).
 
 ### 4. Build command
 
 ```
-npm install
+npm install && npm run build && cd server && npm install
 ```
 
 ### 5. Start command
 
 ```
-npm start
+node server/server.js
 ```
-
-(`npm start` runs `node server.js` — no nodemon, no build step needed.)
 
 ### 6. Environment variables
 

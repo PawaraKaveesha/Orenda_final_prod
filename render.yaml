@@ -12,11 +12,10 @@ services:
   - type: web
     name: orenda-api
     runtime: node
-    rootDir: server
     plan: free
     region: singapore
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: npm install && npm run build && cd server && npm install
+    startCommand: node server/server.js
     # Runs once, before the new version goes live, on every deploy.
     # Idempotent + non-destructive: creates schema if missing, seeds only
     # empty tables and creates the initial admin from ADMIN_EMAIL/ADMIN_PASSWORD.
@@ -41,4 +40,6 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: FRONTEND_URL
+        sync: false
+      - key: VITE_API_URL
         sync: false
