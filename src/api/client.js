@@ -14,8 +14,12 @@ export const api = axios.create({
 // the Vite proxy serves them; in production the frontend host (Cloudflare
 // Pages) does not, so prefix them with the API origin (VITE_API_URL).
 export function resolveImageUrl(url) {
-  if (!url) return url
-  if (/^https?:\/\//i.test(url)) return url
+  if (!url) return ''
+  if (typeof url === 'object') {
+    url = url.src || url.image_url || url.rawSrc || url.url || ''
+  }
+  if (typeof url !== 'string' || !url) return ''
+  if (/^https?:\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url
   if (url.startsWith('/')) return `${API_BASE}${url}`
   return url
 }

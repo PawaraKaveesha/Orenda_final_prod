@@ -30,6 +30,7 @@ import { getPublicSettings } from '../api/settings'
 import { createInquiry } from '../api/inquiries'
 
 import { listRoomPhotos } from '../api/roomPhotos'
+import { resolveImageUrl } from '../api/client'
 
 export default function About() {
   const rooms = useApi(listVillas)
@@ -224,29 +225,55 @@ function NatureVillage() {
 }
 
 function Rooms({ data, roomPhotos, onInquire }) {
-  const { data: apiItems, loading, error, refetch } = data
-  const photos = roomPhotos?.data ?? []
-  const numRooms = apiItems?.length || 1
+  const { data: apiItems, loading: roomsLoading, error, refetch } = data
+  const photosLoading = roomPhotos?.loading ?? false
+  const loading = roomsLoading || (photosLoading && !roomPhotos?.data)
 
-  // Distribute the uploaded room photos across the villa cards.
-  // Each card gets its distributed slice of photos; if there are no admin photos
-  // the card falls back to its own villa image_url (already resolved by mapVilla).
+  const rawPhotos = roomPhotos?.data ?? []
+  const uploadedPhotoUrls = (Array.isArray(rawPhotos) ? rawPhotos : [])
+    .map((p) => {
+      if (!p) return null
+      const url = typeof p === 'string' ? p : (p.src || p.image_url || p.rawSrc || p.url)
+      return resolveImageUrl(url)
+    })
+    .filter(Boolean)
+
   const items = apiItems?.map((room, i) => {
-    if (photos.length === 0) {
-      // No admin-uploaded photos: show only the villa's own image
+    // 1. If room already has its own uploaded photo, render it
+    const hasOwnUploadedPhoto =
+      (typeof room.image === 'string' && room.image.includes('/api/images/')) ||
+      (Array.isArray(room.images) && room.images.some((img) => typeof img === 'string' && img.includes('/api/images/')))
+
+    if (hasOwnUploadedPhoto) {
+      const ownImages = (Array.isArray(room.images) && room.images.length > 0 ? room.images : [room.image])
+        .map((img) => resolveImageUrl(typeof img === 'string' ? img : (img?.src || img?.image_url || img?.url)))
+        .filter(Boolean)
       return {
         ...room,
-        images: room.image ? [room.image] : [],
+        image: ownImages[0] || '',
+        images: ownImages,
       }
     }
-    // Distribute uploaded photos across room cards
-    const roomCardPhotos = photos.filter((_, idx) => idx % numRooms === i)
-    const assignedPhotos = roomCardPhotos.length > 0 ? roomCardPhotos : [photos[i % photos.length]]
-    const imageSrcs = assignedPhotos.map((p) => p.src)
+
+    // 2. If uploaded room photos exist, make them available to room cards
+    if (uploadedPhotoUrls.length > 0) {
+      const rotated = [
+        ...uploadedPhotoUrls.slice(i % uploadedPhotoUrls.length),
+        ...uploadedPhotoUrls.slice(0, i % uploadedPhotoUrls.length),
+      ]
+      return {
+        ...room,
+        image: rotated[0],
+        images: rotated,
+      }
+    }
+
+    // 3. Fallback: room's existing default image
+    const fallbackImage = resolveImageUrl(room.image)
     return {
       ...room,
-      image: imageSrcs[0],
-      images: imageSrcs,
+      image: fallbackImage || '',
+      images: fallbackImage ? [fallbackImage] : [],
     }
   })
 
