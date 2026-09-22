@@ -4,8 +4,10 @@ const TOKEN_KEY = 'orenda_admin_token'
 
 const API_BASE = (import.meta?.env?.VITE_API_URL || '').replace(/\/+$/, '')
 
+const API_PREFIX = API_BASE ? (API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`) : '/api'
+
 export const api = axios.create({
-  baseURL: API_BASE || '/api',
+  baseURL: API_PREFIX,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })

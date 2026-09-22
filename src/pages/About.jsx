@@ -239,23 +239,7 @@ function Rooms({ data, roomPhotos, onInquire }) {
     .filter(Boolean)
 
   const items = apiItems?.map((room, i) => {
-    // 1. If room already has its own uploaded photo, render it
-    const hasOwnUploadedPhoto =
-      (typeof room.image === 'string' && room.image.includes('/api/images/')) ||
-      (Array.isArray(room.images) && room.images.some((img) => typeof img === 'string' && img.includes('/api/images/')))
-
-    if (hasOwnUploadedPhoto) {
-      const ownImages = (Array.isArray(room.images) && room.images.length > 0 ? room.images : [room.image])
-        .map((img) => resolveImageUrl(typeof img === 'string' ? img : (img?.src || img?.image_url || img?.url)))
-        .filter(Boolean)
-      return {
-        ...room,
-        image: ownImages[0] || '',
-        images: ownImages,
-      }
-    }
-
-    // 2. If uploaded room photos exist, make them available to room cards
+    // Uploaded Room Photos from Admin Dashboard are the source of truth
     if (uploadedPhotoUrls.length > 0) {
       const rotated = [
         ...uploadedPhotoUrls.slice(i % uploadedPhotoUrls.length),
@@ -268,7 +252,7 @@ function Rooms({ data, roomPhotos, onInquire }) {
       }
     }
 
-    // 3. Fallback: room's existing default image
+    // Safe fallback if no admin room photos have been uploaded yet
     const fallbackImage = resolveImageUrl(room.image)
     return {
       ...room,
