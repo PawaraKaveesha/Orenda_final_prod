@@ -230,7 +230,14 @@ function Rooms({ data, roomPhotos, onInquire }) {
   const loading = roomsLoading || (photosLoading && !roomPhotos?.data)
 
   const rawPhotos = roomPhotos?.data ?? []
-  const uploadedPhotoUrls = (Array.isArray(rawPhotos) ? rawPhotos : [])
+  const targetIds = [13, 14, 15]
+  const matchedPhotos = targetIds
+    .map((targetId) => rawPhotos.find((p) => (p?.id ?? p?.room_photo_id) === targetId))
+    .filter(Boolean)
+
+  const sourcePhotos = matchedPhotos.length > 0 ? matchedPhotos : rawPhotos
+
+  const uploadedPhotoUrls = (Array.isArray(sourcePhotos) ? sourcePhotos : [])
     .map((p) => {
       if (!p) return null
       const url = typeof p === 'string' ? p : (p.src || p.image_url || p.rawSrc || p.url)
