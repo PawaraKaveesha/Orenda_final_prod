@@ -26,7 +26,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // ---- Security headers ----
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' }, contentSecurityPolicy: false }))
 
 // ---- CORS ----
 // Comma-separated allowed origins. FRONTEND_URL takes precedence (Cloudflare
