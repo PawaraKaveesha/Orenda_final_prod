@@ -2,39 +2,25 @@ import { BedDouble, Users, Ruler, Check, MessageCircle, ImageIcon } from 'lucide
 import { resolveImageUrl } from '../../api/client'
 
 export default function RoomCard({ room, onInquire }) {
-  // Support both room.images[] and room.image, normalizing all entries to usable image URLs
-  const rawList = Array.isArray(room?.images) && room.images.length > 0
-    ? room.images
-    : [room?.image].filter(Boolean)
-
-  const allImages = rawList
-    .map((item) => {
-      if (!item) return null
-      const url = typeof item === 'string' ? item : (item.src || item.image_url || item.rawSrc || item.url)
-      return resolveImageUrl(url)
-    })
-    .filter(Boolean)
+  const imgSrc = resolveImageUrl(
+    room?.image || (Array.isArray(room?.images) && room.images.length > 0 ? room.images[0] : '')
+  )
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-moss-900/5 ring-1 ring-sand-200 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-moss-900/15">
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand-100">
-        {allImages.length > 0 ? (
-          <div className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {allImages.map((img, idx) => (
-              <div key={idx} className="relative h-full w-full shrink-0 snap-center overflow-hidden">
-                <img
-                  src={img}
-                  alt={`${room.name} — ${room.tagline}`}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-              </div>
-            ))}
+        {imgSrc ? (
+          <div className="relative h-full w-full overflow-hidden">
+            <img
+              src={imgSrc}
+              alt={`${room.name} — ${room.tagline}`}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
           </div>
         ) : (
-          // Empty state — no photos uploaded yet
           <div className="flex h-full w-full shrink-0 items-center justify-center bg-moss-100">
             <div className="text-center">
               <ImageIcon size={40} className="mx-auto text-moss-400" />

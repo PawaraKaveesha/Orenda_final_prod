@@ -32,9 +32,14 @@ import { createInquiry } from '../api/inquiries'
 import { listRoomPhotos } from '../api/roomPhotos'
 import { resolveImageUrl } from '../api/client'
 
+const roomImages = [
+  '/api/images/6abf934a8edb2582cb3cd473',
+  '/api/images/6abf934a8edb2582cb3cd478',
+  '/api/images/6abf934a8edb2582cb3cd47d',
+]
+
 export default function About() {
   const rooms = useApi(listVillas)
-  const roomPhotos = useApi(listRoomPhotos)
   const testimonials = useApi(listTestimonials)
   const gallery = useApi(listGallery)
   const offers = useApi(listActiveOffers)
@@ -54,7 +59,7 @@ export default function About() {
       <Hero name={resortName} tagline={settings.data?.resort_tagline || 'Luxury Eco Resort'} />
       <AboutIntro />
       <NatureVillage />
-      <Rooms data={rooms} roomPhotos={roomPhotos} onInquire={handleInquire} />
+      <Rooms data={rooms} onInquire={handleInquire} />
       <Amenities />
       <Gallery data={gallery} />
       <Offers data={offers} />
@@ -224,47 +229,15 @@ function NatureVillage() {
   )
 }
 
-function Rooms({ data, roomPhotos, onInquire }) {
-  const { data: apiItems, loading: roomsLoading, error, refetch } = data
-  const photosLoading = roomPhotos?.loading ?? false
-  const loading = roomsLoading || (photosLoading && !roomPhotos?.data)
-
-  const rawPhotos = roomPhotos?.data ?? []
-  const targetIds = [13, 14, 15]
-  const matchedPhotos = targetIds
-    .map((targetId) => rawPhotos.find((p) => (p?.id ?? p?.room_photo_id) === targetId))
-    .filter(Boolean)
-
-  const sourcePhotos = matchedPhotos.length > 0 ? matchedPhotos : rawPhotos
-
-  const uploadedPhotoUrls = (Array.isArray(sourcePhotos) ? sourcePhotos : [])
-    .map((p) => {
-      if (!p) return null
-      const url = typeof p === 'string' ? p : (p.src || p.image_url || p.rawSrc || p.url)
-      return resolveImageUrl(url)
-    })
-    .filter(Boolean)
+function Rooms({ data, onInquire }) {
+  const { data: apiItems, loading, error, refetch } = data
 
   const items = apiItems?.map((room, i) => {
-    // Uploaded Room Photos from Admin Dashboard are the source of truth
-    if (uploadedPhotoUrls.length > 0) {
-      const rotated = [
-        ...uploadedPhotoUrls.slice(i % uploadedPhotoUrls.length),
-        ...uploadedPhotoUrls.slice(0, i % uploadedPhotoUrls.length),
-      ]
-      return {
-        ...room,
-        image: rotated[0],
-        images: rotated,
-      }
-    }
-
-    // Safe fallback if no admin room photos have been uploaded yet
-    const fallbackImage = resolveImageUrl(room.image)
+    const imageUrl = resolveImageUrl(roomImages[i % roomImages.length])
     return {
       ...room,
-      image: fallbackImage || '',
-      images: fallbackImage ? [fallbackImage] : [],
+      image: imageUrl,
+      images: [imageUrl],
     }
   })
 
