@@ -2,7 +2,10 @@ import axios from 'axios'
 
 const TOKEN_KEY = 'orenda_admin_token'
 
-const API_BASE = (import.meta?.env?.VITE_API_URL || '').replace(/\/+$/, '')
+const API_BASE = (
+  import.meta?.env?.VITE_API_URL ||
+  (import.meta?.env?.PROD ? 'https://orenda-api.onrender.com' : '')
+).replace(/\/+$/, '')
 
 const API_PREFIX = API_BASE ? (API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`) : '/api'
 
