@@ -25,7 +25,13 @@ export function resolveImageUrl(url) {
   }
   if (typeof url !== 'string' || !url) return ''
   if (/^https?:\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url
-  if (url.startsWith('/')) return `${API_BASE}${url}`
+  const base = API_BASE.replace(/\/+$/, '')
+  if (url.startsWith('/')) {
+    if (base.endsWith('/api') && url.startsWith('/api/')) {
+      return `${base}${url.slice(4)}`
+    }
+    return `${base}${url}`
+  }
   return url
 }
 

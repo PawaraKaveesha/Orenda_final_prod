@@ -17,7 +17,7 @@ import mongoose from 'mongoose'
 // ---------------------------------------------------------------------------
 
 export function getMongoUri() {
-  const uri = process.env.MONGODB_URI
+  const uri = process.env.MONGODB_URI || process.env.DATABASE_URL
   if (!uri) {
     throw new Error('MONGODB_URI is required. Set it in server/.env or the environment.')
   }
