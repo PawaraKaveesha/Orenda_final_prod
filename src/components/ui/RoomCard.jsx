@@ -1,21 +1,30 @@
+import { useState } from 'react'
 import { BedDouble, Users, Ruler, Check, MessageCircle, ImageIcon } from 'lucide-react'
 import { resolveImageUrl } from '../../api/client'
 
 export default function RoomCard({ room, onInquire }) {
-  const imgSrc = resolveImageUrl(
+  const [loadFailed, setLoadFailed] = useState(false)
+  const primarySrc = resolveImageUrl(
     room?.image || (Array.isArray(room?.images) && room.images.length > 0 ? room.images[0] : '')
   )
+  const fallbackSrc = room?.fallbackLocalImage ? resolveImageUrl(room.fallbackLocalImage) : ''
+  const displaySrc = (!loadFailed && primarySrc) ? primarySrc : (fallbackSrc || '')
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-moss-900/5 ring-1 ring-sand-200 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-moss-900/15">
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand-100">
-        {imgSrc ? (
+        {displaySrc ? (
           <div className="relative h-full w-full overflow-hidden">
             <img
-              src={imgSrc}
+              src={displaySrc}
               alt={`${room.name} — ${room.tagline}`}
               loading="lazy"
               decoding="async"
+              onError={() => {
+                if (!loadFailed && fallbackSrc && displaySrc !== fallbackSrc) {
+                  setLoadFailed(true)
+                }
+              }}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />

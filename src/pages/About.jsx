@@ -31,15 +31,11 @@ import { createInquiry } from '../api/inquiries'
 
 import { listRoomPhotos } from '../api/roomPhotos'
 import { resolveImageUrl } from '../api/client'
-
-const roomImages = [
-  '/api/images/6abf934a8edb2582cb3cd473',
-  '/api/images/6abf934a8edb2582cb3cd478',
-  '/api/images/6abf934a8edb2582cb3cd47d',
-]
+import { resolveRoomImages } from '../utils/roomImageResolver'
 
 export default function About() {
   const rooms = useApi(listVillas)
+  const roomPhotos = useApi(listRoomPhotos)
   const testimonials = useApi(listTestimonials)
   const gallery = useApi(listGallery)
   const offers = useApi(listActiveOffers)
@@ -59,7 +55,7 @@ export default function About() {
       <Hero name={resortName} tagline={settings.data?.resort_tagline || 'Luxury Eco Resort'} />
       <AboutIntro />
       <NatureVillage />
-      <Rooms data={rooms} onInquire={handleInquire} />
+      <Rooms data={rooms} roomPhotos={roomPhotos} gallery={gallery} onInquire={handleInquire} />
       <Amenities />
       <Gallery data={gallery} />
       <Offers data={offers} />
@@ -229,15 +225,97 @@ function NatureVillage() {
   )
 }
 
-function Rooms({ data, onInquire }) {
-  const { data: apiItems, loading, error, refetch } = data
+const fallbackRooms = [
+  {
+    id: '1',
+    name: 'Araliya Villa',
+    tagline: 'Garden Retreat',
+    location: 'Garden Wing',
+    size: 125,
+    category: 'Standard',
+    description:
+      'Named after the frangipani that scents its courtyard, Araliya Villa is a tranquil garden retreat wrapped in tropical foliage. Wake to birdsong, bathe beneath the open sky, and let the surrounding palms set the pace of your days.',
+    price: 210,
+    guests: 4,
+    bedrooms: 2,
+    bathrooms: 2,
+    amenities: [
+      'Private garden',
+      'Outdoor rain shower',
+      'Minibar',
+      'Complimentary bikes',
+      'Ceiling fan + AC',
+      'Daily breakfast',
+    ],
+  },
+  {
+    id: '2',
+    name: 'Ehela Villa',
+    tagline: 'Pool Sanctuary',
+    location: 'Courtyard Wing',
+    size: 210,
+    category: 'Deluxe',
+    description:
+      'Ehela Villa pairs warm timber interiors with a private plunge pool shaded by a golden rain tree. An easy, elegant sanctuary for families and friends seeking space, sunlight, and stillness.',
+    price: 320,
+    guests: 6,
+    bedrooms: 3,
+    bathrooms: 3,
+    amenities: [
+      'Private plunge pool',
+      'Open-air living pavilion',
+      'Full kitchen',
+      'Outdoor dining for 6',
+      'Smart TV + sound',
+      'Daily breakfast',
+    ],
+  },
+  {
+    id: '3',
+    name: 'Karada Villa',
+    tagline: 'Beachfront Escape',
+    location: 'Shore Wing',
+    size: 280,
+    category: 'Deluxe',
+    description:
+      'Standing at the edge of the mangroves, Karada Villa is our most coveted address. Step from your verandah onto soft sand, fall asleep to the tide, and watch sunsets spill over the Indian Ocean.',
+    price: 390,
+    guests: 8,
+    bedrooms: 4,
+    bathrooms: 4,
+    amenities: [
+      'Direct beach access',
+      'Private verandah + daybeds',
+      'Outdoor plunge tub',
+      'Butler service',
+      'Sunset decks',
+      'Daily breakfast + dinner',
+    ],
+  },
+]
 
-  const items = apiItems?.map((room, i) => {
-    const imageUrl = resolveImageUrl(roomImages[i % roomImages.length])
+function Rooms({ data, roomPhotos, gallery, onInquire }) {
+  const { data: apiItems, loading, error, refetch } = data || {}
+
+  const sourceRooms =
+    Array.isArray(apiItems) && apiItems.length > 0
+      ? apiItems
+      : (!loading || error)
+      ? fallbackRooms
+      : null
+
+  const items = sourceRooms?.map((room, i) => {
+    const { primaryImage, allImages, fallbackLocalImage } = resolveRoomImages(
+      room,
+      i,
+      roomPhotos?.data,
+      gallery?.data
+    )
     return {
       ...room,
-      image: imageUrl,
-      images: [imageUrl],
+      image: primaryImage,
+      images: allImages.length > 0 ? allImages : [primaryImage],
+      fallbackLocalImage,
     }
   })
 
@@ -251,18 +329,14 @@ function Rooms({ data, onInquire }) {
             description="Each room is private, comfortable and set within the gardens — rooms start from just $20, and every stay comes with the same warm welcome."
           />
         </Reveal>
-        {error ? (
-          <div className="mt-14">
-            <ErrorMessage error={error} onRetry={refetch} />
-          </div>
-        ) : loading && !items ? (
+        {loading && !items ? (
           <div className="mt-14">
             <Loading />
           </div>
         ) : (
           <div className="mt-14 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {(items || []).map((room, i) => (
-              <Reveal key={room.id} delay={i * 120}>
+              <Reveal key={room.id || i} delay={i * 120}>
                 <RoomCard room={room} onInquire={onInquire} />
               </Reveal>
             ))}
