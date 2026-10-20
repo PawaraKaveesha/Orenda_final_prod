@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Sprout, Globe, Sunrise, ArrowRight } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import SectionHeading from '../components/ui/SectionHeading'
@@ -26,6 +27,10 @@ const aspirations = [
 
 export default function Vision() {
   const goToInquiry = useSectionNav()
+
+  useEffect(() => {
+    document.title = 'Our Vision | Orenda Eco lodge and Spa — Regenerative Village Tourism'
+  }, [])
 
   return (
     <>

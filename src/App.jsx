@@ -59,6 +59,11 @@ export default function App() {
           <Route path="/" element={<About />} />
           <Route path="/mission" element={<Mission />} />
           <Route path="/vision" element={<Vision />} />
+          <Route path="/rooms" element={<Navigate to="/" state={{ scrollTo: 'rooms' }} replace />} />
+          <Route path="/gallery" element={<Navigate to="/" state={{ scrollTo: 'gallery' }} replace />} />
+          <Route path="/contact" element={<Navigate to="/" state={{ scrollTo: 'contact' }} replace />} />
+          <Route path="/offers" element={<Navigate to="/" state={{ scrollTo: 'offers' }} replace />} />
+          <Route path="/amenities" element={<Navigate to="/" state={{ scrollTo: 'amenities' }} replace />} />
         </Route>
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/change-password" element={<ChangePassword />} />

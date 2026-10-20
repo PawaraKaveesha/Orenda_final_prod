@@ -19,8 +19,8 @@ const contactDetails = [
   {
     icon: Phone,
     label: 'Call us',
-    lines: ['+94 91 234 5678', '+94 77 123 4567'],
-    href: 'tel:+94912345678',
+    lines: ['0777700680', '+94 77 770 0680'],
+    href: 'tel:0777700680',
   },
   {
     icon: Mail,

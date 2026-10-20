@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { BadgePercent, Pencil, Plus, Trash2, Power } from 'lucide-react'
 import Modal from '../../components/admin/Modal'
@@ -36,6 +36,10 @@ export default function AdminOffers() {
   const [draft, setDraft] = useState(null)
   const [saving, setSaving] = useState(false)
 
+  useEffect(() => {
+    document.title = 'Offers | Orenda Admin'
+  }, [])
+
   const itemsList = items ?? seed ?? []
 
   const patchList = (updated) => {
@@ -48,6 +52,9 @@ export default function AdminOffers() {
   }
 
   const removeItem = async (id) => {
+    if (typeof window !== 'undefined' && !window.confirm('Are you sure you want to delete this offer?')) {
+      return
+    }
     try {
       await deleteOffer(id)
       setItems((prev) => (prev ?? seed ?? []).filter((o) => o.id !== id))

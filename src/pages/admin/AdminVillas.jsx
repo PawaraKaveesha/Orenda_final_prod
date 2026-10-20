@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { Pencil, Power, BedDouble, Users, Ruler, ChevronDown } from 'lucide-react'
 import StatusBadge from '../../components/admin/StatusBadge'
@@ -24,6 +24,10 @@ export default function AdminVillas() {
   const [items, setItems] = useState(null)
   const [editing, setEditing] = useState(null)
   const [draft, setDraft] = useState(null)
+
+  useEffect(() => {
+    document.title = 'Villas | Orenda Admin'
+  }, [])
 
   const itemsList = items ?? seed ?? []
 

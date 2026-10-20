@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { Search, Inbox, ChevronDown } from 'lucide-react'
 import StatusBadge from '../../components/admin/StatusBadge'
@@ -19,6 +19,10 @@ const inquiryStatuses = ['All', 'New', 'Read', 'Replied']
 
 export default function AdminInquiries() {
   const { data: seed, loading, error, refetch } = useApi(listInquiries)
+
+  useEffect(() => {
+    document.title = 'Inquiries | Orenda Admin'
+  }, [])
   const [items, setItems] = useState(null)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
@@ -53,6 +57,12 @@ export default function AdminInquiries() {
 
   const selected = itemsList.find((i) => i.id === selectedId) || null
 
+  const getRawId = (id) => {
+    if (!id) return id
+    const str = String(id)
+    return str.includes('-') ? str.split('-')[1] : str
+  }
+
   const patchLocal = (id, updater) => {
     setItems((prev) => {
       const base = prev ?? seed ?? []
@@ -62,7 +72,8 @@ export default function AdminInquiries() {
 
   const updateStatus = async (id, status) => {
     try {
-      const updated = await updateInquiryStatus(id.split('-')[1], status)
+      const rawId = getRawId(id)
+      const updated = await updateInquiryStatus(rawId, status)
       patchLocal(id, () => updated)
       toast.success(`Marked as ${status}`)
     } catch (err) {
@@ -71,8 +82,12 @@ export default function AdminInquiries() {
   }
 
   const removeItem = async (id) => {
+    if (typeof window !== 'undefined' && !window.confirm('Are you sure you want to delete this inquiry?')) {
+      return
+    }
     try {
-      await deleteInquiry(id.split('-')[1])
+      const rawId = getRawId(id)
+      await deleteInquiry(rawId)
       setItems((prev) => (prev ?? seed ?? []).filter((i) => i.id !== id))
       setSelectedId(null)
       toast.success('Inquiry deleted')
@@ -83,7 +98,8 @@ export default function AdminInquiries() {
 
   const addNote = async (id, note) => {
     try {
-      const updated = await addInquiryNote(id.split('-')[1], note)
+      const rawId = getRawId(id)
+      const updated = await addInquiryNote(rawId, note)
       patchLocal(id, () => updated)
       toast.success('Note added')
     } catch (err) {

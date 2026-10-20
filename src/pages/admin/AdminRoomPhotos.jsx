@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { Trash2, ImageIcon, Eye, ExternalLink } from 'lucide-react'
 import Loading from '../../components/ui/Loading'
@@ -13,6 +13,10 @@ export default function AdminRoomPhotos() {
   const [items, setItems] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [previewItem, setPreviewItem] = useState(null)
+
+  useEffect(() => {
+    document.title = 'Room Photos | Orenda Admin'
+  }, [])
 
   const itemsList = items ?? seed ?? []
 

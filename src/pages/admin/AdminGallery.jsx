@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import {
   Trash2,
@@ -29,6 +29,10 @@ const categories = ['Beach', 'Villa', 'Interior', 'Nature', 'Wellness', 'Resort'
 
 export default function AdminGallery() {
   const { data: seed, loading, error, refetch } = useApi(listGallery)
+
+  useEffect(() => {
+    document.title = 'Gallery | Orenda Admin'
+  }, [])
   const [items, setItems] = useState(null)
   const [activeCategory, setActiveCategory] = useState('All')
   

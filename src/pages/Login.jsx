@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react'
@@ -19,6 +19,10 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    document.title = 'Sign In | Orenda Admin'
+  }, [])
 
   if (admin && !admin.must_change_password) return <Navigate to={from} replace />
   if (admin && admin.must_change_password) return <Navigate to="/admin/change-password" replace />

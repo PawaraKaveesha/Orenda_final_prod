@@ -16,18 +16,30 @@ const sectionLinks = [
   { id: 'gallery', label: 'Gallery' },
 ]
 
+const defaultSocials = {
+  facebook: 'https://www.facebook.com/share/19DFSLQ9GH/?mibextid=wwXIfr',
+  tiktok: 'https://www.tiktok.com/@orendaceylon?_r=1&_t=ZS-98nr0EAiVhk',
+  instagram: 'https://www.instagram.com/orenda_ceylon?igsh=MXNxdjAyam1hZjN1Zg%3D%3D&utm_source=qr',
+}
+const defaultAddress = 'No 52, Handy Nanayakkara Mawatha, Ankokkawala, Galle 80048, Sri Lanka'
+const defaultMapsUrl = 'https://maps.app.goo.gl/H1mrskAXV2ktWj369'
+const defaultPhone = '0777700680'
+const defaultBookingUrl = 'https://www.booking.com/Share-B0eRbU'
+
 export default function Footer() {
   const goToSection = useSectionNav()
   const settings = useApi(getPublicSettings)
 
-  const phone = settings.data?.phone || '0777700680'
+  const phone = settings.data?.phone || defaultPhone
   const email = settings.data?.email || 'stay@orendagalle.com'
-  const address =
-    settings.data?.address ||
-    'Orenda Eco lodge and Spa, Lighthouse Road, Koggala, Galle, Sri Lanka'
-  const bookingUrl = settings.data?.booking_url || 'https://www.booking.com/Share-B0eRbU'
+  const address = settings.data?.address || defaultAddress
+  const mapsUrl = settings.data?.maps_url || defaultMapsUrl
+  const bookingUrl = settings.data?.booking_url || defaultBookingUrl
   const socials = socialNames
-    .map((name) => ({ name, url: settings.data?.[`social_${name}`] }))
+    .map((name) => ({
+      name,
+      url: settings.data?.[`social_${name}`] || defaultSocials[name],
+    }))
     .filter((social) => social.url)
 
   return (
@@ -99,7 +111,14 @@ export default function Footer() {
           <ul className="mt-5 space-y-4 text-sm text-sand-200/80">
             <li className="flex items-start justify-center gap-3 sm:justify-start">
               <MapPin size={18} className="mt-0.5 shrink-0 text-brass-400" />
-              <span>{address}</span>
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-center sm:text-left transition-colors hover:text-brass-400"
+              >
+                {address}
+              </a>
             </li>
             <li className="flex items-center justify-center gap-3 sm:justify-start">
               <Phone size={18} className="shrink-0 text-brass-400" />

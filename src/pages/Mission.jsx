@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Leaf, HeartHandshake, Users, ArrowRight } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import SectionHeading from '../components/ui/SectionHeading'
@@ -26,6 +27,10 @@ const pillars = [
 
 export default function Mission() {
   const goToInquiry = useSectionNav()
+
+  useEffect(() => {
+    document.title = 'Our Mission | Orenda Eco lodge and Spa — Sustainable Eco Hospitality'
+  }, [])
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Phone } from 'lucide-react'
 import Button from '../ui/Button'
 import { useSectionNav } from '../../hooks/useSectionNav'
 import logo from '../../assets/logo.png'
@@ -92,7 +92,16 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <div className="hidden shrink-0 lg:block">
+        <div className="hidden shrink-0 items-center gap-4 lg:flex">
+          <a
+            href="tel:0777700680"
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-300 ${
+              solid ? 'text-moss-800 hover:text-brass-600' : 'text-white/90 hover:text-brass-300'
+            }`}
+          >
+            <Phone size={14} className="text-brass-500" />
+            <span>077 770 0680</span>
+          </a>
           <Button onClick={() => goToSection('contact')} size="sm">
             Make an Inquiry
           </Button>
@@ -146,7 +155,16 @@ export default function Navbar() {
                 </a>
               </li>
             ))}
-            <li className="py-3">
+            <li className="border-t border-sand-200/60 pt-2 pb-1">
+              <a
+                href="tel:0777700680"
+                className="flex min-h-11 items-center gap-2 text-sm font-semibold tracking-wide text-moss-900 transition-colors hover:text-brass-600"
+              >
+                <Phone size={16} className="text-brass-500" />
+                Call us: 077 770 0680
+              </a>
+            </li>
+            <li className="py-2">
               <Button
                 onClick={() => {
                   setOpen(false)

@@ -37,6 +37,27 @@ const sections = [
   },
 ]
 
+const placeholders = {
+  resort_name: 'Orenda Eco lodge and Spa',
+  resort_tagline: 'Luxury Eco Resort',
+  resort_description: "A small, soulful eco resort on Sri Lanka's southern coast.",
+  address: 'No 52, Handy Nanayakkara Mawatha, Ankokkawala, Galle 80048, Sri Lanka',
+  maps_url: 'https://maps.app.goo.gl/H1mrskAXV2ktWj369',
+  phone: '0777700680',
+  phone_secondary: '+94 77 123 4567',
+  email: 'stay@orendagalle.com',
+  email_press: 'press@orendagalle.com',
+  reception_hours: 'Daily · 7:00 AM – 10:00 PM',
+  concierge_hours: 'Concierge on call 24/7',
+  currency: 'LKR',
+  check_in_time: '2:00 PM',
+  check_out_time: '11:00 AM',
+  booking_url: 'https://www.booking.com/Share-B0eRbU',
+  social_facebook: 'https://www.facebook.com/share/19DFSLQ9GH/?mibextid=wwXIfr',
+  social_tiktok: 'https://www.tiktok.com/@orendaceylon?_r=1&_t=ZS-98nr0EAiVhk',
+  social_instagram: 'https://www.instagram.com/orenda_ceylon?igsh=MXNxdjAyam1hZjN1Zg%3D%3D&utm_source=qr',
+}
+
 export default function AdminSettings() {
   const { data: seed, loading, error, refetch } = useApi(getSettings)
   const [values, setValues] = useState({})
@@ -115,6 +136,7 @@ export default function AdminSettings() {
                     id={`setting-${key}`}
                     rows={3}
                     value={values[key] ?? ''}
+                    placeholder={placeholders[key] || ''}
                     onChange={(e) => setValues({ ...values, [key]: e.target.value })}
                     className={inputClass}
                   />
@@ -123,6 +145,7 @@ export default function AdminSettings() {
                     id={`setting-${key}`}
                     type="text"
                     value={values[key] ?? ''}
+                    placeholder={placeholders[key] || ''}
                     onChange={(e) => setValues({ ...values, [key]: e.target.value })}
                     className={inputClass}
                   />

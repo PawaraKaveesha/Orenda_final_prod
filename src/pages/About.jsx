@@ -48,6 +48,10 @@ export default function About() {
     contactRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  useEffect(() => {
+    document.title = 'About Us | Orenda Eco lodge and Spa — Rooms in Galle, Sri Lanka'
+  }, [])
+
   const resortName = settings.data?.resort_name || 'Orenda Eco lodge and Spa'
 
   return (
@@ -556,12 +560,23 @@ function Contact({ settings, rooms = [], selectedRoom, onRoomChange, contactRef 
   const inputClass =
     'w-full rounded-xl border border-sand-200 bg-white px-4 py-3 text-sm text-moss-900 placeholder:text-moss-800/40 transition-colors duration-300 focus:border-moss-500 focus:outline-none focus:ring-2 focus:ring-moss-500/20'
 
+  const defaultSocials = {
+    facebook: 'https://www.facebook.com/share/19DFSLQ9GH/?mibextid=wwXIfr',
+    tiktok: 'https://www.tiktok.com/@orendaceylon?_r=1&_t=ZS-98nr0EAiVhk',
+    instagram: 'https://www.instagram.com/orenda_ceylon?igsh=MXNxdjAyam1hZjN1Zg%3D%3D&utm_source=qr',
+  }
+
   const phone = settings?.phone || '0777700680'
   const email = settings?.email || 'stay@orendagalle.com'
-  const address = settings?.address || 'Orenda Eco lodge and Spa, Lighthouse Road, Koggala, Galle, Sri Lanka'
+  const address =
+    settings?.address || 'No 52, Handy Nanayakkara Mawatha, Ankokkawala, Galle 80048, Sri Lanka'
+  const mapsUrl = settings?.maps_url || 'https://maps.app.goo.gl/H1mrskAXV2ktWj369'
   const bookingUrl = settings?.booking_url || 'https://www.booking.com/Share-B0eRbU'
   const socials = socialNames
-    .map((name) => ({ name, url: settings?.[`social_${name}`] }))
+    .map((name) => ({
+      name,
+      url: settings?.[`social_${name}`] || defaultSocials[name],
+    }))
     .filter((social) => social.url)
 
   return (
@@ -755,7 +770,14 @@ function Contact({ settings, rooms = [], selectedRoom, onRoomChange, contactRef 
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brass-400">
                     Address
                   </p>
-                  <p className="mt-1 text-sm text-sand-100/85">{address}</p>
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 block text-sm text-sand-100/85 transition-colors hover:text-brass-300"
+                  >
+                    {address}
+                  </a>
                 </div>
               </div>
               <div className="flex gap-4">

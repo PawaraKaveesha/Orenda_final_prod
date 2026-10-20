@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
-import { Menu, ChevronDown, LogOut } from 'lucide-react'
+import { Menu, ChevronDown, LogOut, ExternalLink } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import avatar from '../../assets/logo.png'
 
@@ -8,6 +8,7 @@ const titles = {
   '/admin': 'Dashboard',
   '/admin/inquiries': 'Customer Inquiries',
   '/admin/villas': 'Villas',
+  '/admin/room-photos': 'Room Photos',
   '/admin/gallery': 'Gallery',
   '/admin/offers': 'Offers',
   '/admin/settings': 'Settings',
@@ -54,6 +55,15 @@ export default function Topbar({ onMenuClick }) {
       </h1>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <Link
+          to="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden items-center gap-1.5 rounded-xl border border-sand-200 bg-white px-3 py-2 text-xs font-semibold text-moss-800 shadow-sm transition-colors hover:bg-moss-50 hover:text-moss-900 sm:inline-flex"
+        >
+          <ExternalLink size={13} className="text-brass-600" />
+          <span>View Public Site</span>
+        </Link>
         <div className="relative" ref={profileRef}>
           <button
             type="button"

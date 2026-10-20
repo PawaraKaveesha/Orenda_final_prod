@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Inbox, PlusCircle, Home, BadgePercent, ChevronRight, ArrowUpRight } from 'lucide-react'
 import StatCard from '../../components/admin/StatCard'
@@ -13,6 +14,10 @@ export default function AdminDashboard() {
   const { admin } = useAuth()
   const stats = useApi(getDashboardStats)
   const inquiries = useApi(listInquiries)
+
+  useEffect(() => {
+    document.title = 'Dashboard | Orenda Admin'
+  }, [])
 
   const loading = stats.loading || inquiries.loading
   const error = stats.error || inquiries.error
